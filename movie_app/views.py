@@ -34,43 +34,92 @@ class MovieView(APIView):
         serializer = MovieSerializer(movies, many=True)
         return Response({'data': serializer.data,'total':total})
     
-    def delete(self, request, id):
-        movie = get_object_or_404(MovieModel, id=id)
-        movie.delete()
-        return Response({'message': 'Movie deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    
     
     def post(self, request):
         serializer = MovieCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
     
            
-    def put(self, request, id):
-        movie = get_object_or_404(MovieModel, id=id)
-        serializer = MovieSerializer(movie, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
     
 class MovieDetailView(APIView):
-    def get(self, request, id):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request:Request, id):
         movie = get_object_or_404(MovieModel, id=id)
         serializer = MovieSerializer(movie)
         return Response(serializer.data)
     
+    def put(self, request:Request, id):
+        movie = get_object_or_404(MovieModel, id=id)
+        serializer = MovieSerializer(movie, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    
+    def delete(self, request:Request, id):
+        movie = get_object_or_404(MovieModel, id=id)
+        movie.delete()
+        return Response({'message': 'Movie deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+
+class AuthorView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request:Request):
+        authors = AuthorModel.objects.all()
+        serializer = AuthorSerializer(authors, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AuthorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    
+
+class AuthorDetailView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def get(self, request:Request, id):
+        author = AuthorModel.objects.get(pk=id)
+        serializer = AuthorSerializer(author)
+        return Response(serializer.data)
+
+    def put(self, request:Request, id):
+        author = AuthorModel.objects.get(pk=id)
+        serializer = AuthorSerializer(author, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+        
+    
+    def delete(self, request:Request, pk):
+
+        author = AuthorModel.objects.get(pk=pk)
+        if author:
+            author.delete()
+            return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"error: Author Not Found"}, status=status.HTTP_403_FORBIDDEN)
+        
+
+
+
 class CategoryView(APIView):
     def get(self, request):
         categories = CategoryModel.objects.all()
         serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
-
-class AuthorView(APIView):
-    def get(self, request):
-        authors = AuthorModel.objects.all()
-        serializer = AuthorSerializer(authors, many=True)
         return Response(serializer.data)
