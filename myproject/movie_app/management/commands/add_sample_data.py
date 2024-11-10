@@ -1,6 +1,6 @@
 # myapp/management/commands/add_sample_data.py
 from django.core.management.base import BaseCommand
-from movies.models import MovieModel,AuthorModel,CategoryModel
+from movie_app.models import MovieModel,AuthorModel,CategoryModel
 import random
 
 class Command(BaseCommand):

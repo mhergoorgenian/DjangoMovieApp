@@ -10,7 +10,7 @@ from .models import MovieModel,CategoryModel,AuthorModel
 from .serializers import MovieSerializer,AuthorSerializer,CategorySerializer
 from django.shortcuts import get_object_or_404
 
-class MovieListView(APIView):
+class MovieView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     def get(self,request:Request):
@@ -34,7 +34,7 @@ class MovieListView(APIView):
         serializer = MovieSerializer(movies, many=True)
         return Response({'data': serializer.data,'total':total})
     
-class MovieDetailAPIView(APIView):
+class MovieDetailView(APIView):
     def get(self, request, id):
         movie = get_object_or_404(MovieModel, id=id)
         serializer = MovieSerializer(movie)

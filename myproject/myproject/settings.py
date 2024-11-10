@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'auth_app',
-    'movies'
+    'movie_app'
 ]
 
 MIDDLEWARE = [
