@@ -3,6 +3,7 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import CategoryModel, AuthorModel,MovieModel
+from .serializers import MovieSerializer
 import json
 
 class MovieTest(APITestCase):
@@ -19,23 +20,37 @@ class MovieTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         res_data = response.json()
         token = res_data['token']
-        print("Token:", token)
 
-        # add data
+        # Add data
         category = CategoryModel.objects.create(name="Action")
         author = AuthorModel.objects.create(name="mher")
-        MovieModel.objects.create(
+        movie = MovieModel.objects.create(
             name="Test",
             description="powerfull banana",
             author=author,
             category=category
         )
+        
+        # Expected data
+        expected_data = {
+            "data": [
+                {
+                    "name": "Test",
+                    "description": "powerfull banana",
+                    "author": "mher",
+                    "category": "Action",
+                    "release_date": None,
+                    "rating": None,
+                    "duration": None
+                }
+            ],
+            'total':1
+        }
 
         # Get movie list
         url = reverse('movie-list') + "?name=Test"  # Adjust the name filter if needed
-        print(url)
         response = self.client.get(url, HTTP_AUTHORIZATION='Token ' + token)
-        print(response)
         res_data = json.loads(response.content)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print("Movie list:", res_data)
+        self.assertEqual(res_data, expected_data)

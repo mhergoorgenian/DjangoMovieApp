@@ -7,11 +7,11 @@ from django.http import JsonResponse
 from rest_framework.request import Request
 from rest_framework import status
 from .models import MovieModel,CategoryModel,AuthorModel
-from .serializers import MovieSerializer,AuthorSerializer,CategorySerializer
+from .serializers import MovieSerializer,AuthorSerializer,CategorySerializer,MovieCreateSerializer
 from django.shortcuts import get_object_or_404
 
 class MovieView(APIView):
-    
+
     def get(self,request:Request):
         name=request.query_params.get('name')
         category=request.query_params.get('category')
@@ -49,7 +49,7 @@ class MovieCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
 
     def post(self, request):
-        serializer = MovieSerializer(data=request.data)
+        serializer = MovieCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
