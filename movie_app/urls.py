@@ -3,7 +3,7 @@ from .views import MovieView, MovieDetailView,MovieDeleteView,MovieUpdateView,Mo
 
 urlpatterns = [
     path('movies', MovieView.as_view(), name='movie-list'),
-    path('<movie/int:id>', MovieDetailView.as_view(), name='movie-id'),
+    path('movie/<int:id>', MovieDetailView.as_view(), name='movie-id'),
     path('movies', MovieCreateView.as_view(), name='movie-create'),
     path('movies/<int:id>', MovieDeleteView.as_view(), name='movie-delete'),
     path('movies/<int:id>', MovieUpdateView.as_view(), name='movie-update'),
