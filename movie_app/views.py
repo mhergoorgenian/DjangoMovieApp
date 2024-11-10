@@ -11,7 +11,8 @@ from .serializers import MovieSerializer,AuthorSerializer,CategorySerializer,Mov
 from django.shortcuts import get_object_or_404
 
 class MovieView(APIView):
-
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     def get(self,request:Request):
         name=request.query_params.get('name')
         category=request.query_params.get('category')
@@ -33,31 +34,19 @@ class MovieView(APIView):
         serializer = MovieSerializer(movies, many=True)
         return Response({'data': serializer.data,'total':total})
     
-
-            
-
-class MovieDeleteView(APIView):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-
     def delete(self, request, id):
         movie = get_object_or_404(MovieModel, id=id)
         movie.delete()
         return Response({'message': 'Movie deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-
-
-class MovieCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-
+    
     def post(self, request):
         serializer = MovieCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class MovieUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
-
+    
+           
     def put(self, request, id):
         movie = get_object_or_404(MovieModel, id=id)
         serializer = MovieSerializer(movie, data=request.data, partial=True)
@@ -65,6 +54,8 @@ class MovieUpdateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     
 class MovieDetailView(APIView):
     def get(self, request, id):
