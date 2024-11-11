@@ -73,7 +73,7 @@ class AuthorView(APIView):
     def get(self, request: Request):
         offset = int(request.query_params.get('offset', 0))
         limit = int(request.query_params.get('limit', 5))
-        authors = AuthorModel.objects.all()[offset:offset+limit]
+        authors = AuthorModel.objects.all()[offset:limit]
         total = AuthorModel.objects.all().count()
         serializer = AuthorSerializer(authors, many=True)
         return Response({'data': serializer.data, 'total': total})
@@ -121,7 +121,7 @@ class CategoryView(APIView):
     def get(self, request: Request):
         offset = int(request.query_params.get('offset', 0))
         limit = int(request.query_params.get('limit', 5))
-        categories = CategoryModel.objects.all()[offset:offset+limit]
+        categories = CategoryModel.objects.all()[offset:limit]
         total = CategoryModel.objects.all().count()
         serializer = CategorySerializer(categories, many=True)
         return Response({'data': serializer.data, 'total': total})
