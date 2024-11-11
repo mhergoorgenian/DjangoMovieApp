@@ -2,6 +2,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import MovieModel, AuthorModel, CategoryModel
+from .serializers import MovieSerializer
+import json
 
 class MovieTest(APITestCase):
     def test_movie(self):
@@ -24,12 +26,29 @@ class MovieTest(APITestCase):
             author=self.author,
             category=self.category
         )
+        print({"movie":MovieSerializer(self.movie).data})
 
+
+        test_data ={'data':[
+            {
+            "name": "Test Movie",
+            "description": "Test Description",
+            "author": self.author.name,
+            "category": self.category.name,
+            "release_date":None,
+            "rating":None,
+            "duration":None
+        }
+        ],
+        'total': 1
+        }
+        print({"movie":test_data})
         # test movie with filter
         movie_list_url = reverse('movie-list') + "?name=Test"
         response = self.client.get(movie_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['total'], 1)
+        print({"movie":response.content})
+        self.assertEqual(response.data, test_data)
         
         # test movie creation
         movie_data = {
@@ -65,6 +84,7 @@ class MovieTest(APITestCase):
         author_list_url = reverse('author-list')
         response = self.client.post(author_list_url, data=author_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['name'], "New Author")
         print(response.content)
 
         # category creation
@@ -72,6 +92,7 @@ class MovieTest(APITestCase):
         category_list_url = reverse('category-list')
         response = self.client.post(category_list_url, data=category_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['name'], "New Category")
         print(response.content)
 
         # test author by id, update, and delete
@@ -81,7 +102,6 @@ class MovieTest(APITestCase):
         print(response.content)
         
         response = self.client.put(author_detail_url, {"name": "Updated Author"}, format='json')
-        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], "Updated Author")
         print(response.content)
