@@ -2,17 +2,28 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import MovieModel, AuthorModel, CategoryModel
-
+from auth_app.models import ProfileModel
+from django.contrib.auth.models import User
 class MovieTest(APITestCase):
 
     def setUp(self):
         # Register and login to get the authorization token
-        user_data = {'username': 'testuser', 'password': 'testpassword'}
-        register_url = reverse('auth-register')
-        self.client.post(register_url, {**user_data, 'fullname': 'testname'})
+        #user_data = {'username': 'testuser', 'password': 'testpassword'}
+        #register_url = reverse('auth-register')
+        #self.client.post(register_url, {**user_data, 'fullname': 'testname'})
         
+        #create superuser
+        self.superuser = User.objects.create_superuser(
+            username='adminuser',
+            password='superpassword',
+            email='admin@example.com'
+        )
+        
+        #login
         login_url = reverse('auth-login')
-        response = self.client.post(login_url, user_data)
+        response = self.client.post(login_url, {'username': 'adminuser', 'password': 'superpassword'})
+        
+        #token
         token = response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
 

@@ -9,10 +9,11 @@ from rest_framework import status
 from .models import MovieModel,CategoryModel,AuthorModel
 from .serializers import MovieSerializer,AuthorSerializer,CategorySerializer,MovieCreateSerializer
 from django.shortcuts import get_object_or_404
+from .permissions import IsAdminOrReadOnly
 
 class MovieView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
     def get(self,request:Request):
         name=request.query_params.get('name')
         category=request.query_params.get('category')
@@ -45,7 +46,7 @@ class MovieView(APIView):
     
 class MovieDetailView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
 
     def get(self, request:Request, id):
         movie = get_object_or_404(MovieModel, id=id)
@@ -69,7 +70,7 @@ class MovieDetailView(APIView):
 
 class AuthorView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
     def get(self, request: Request):
         offset = int(request.query_params.get('offset', 0))
         limit = int(request.query_params.get('limit', 5))
@@ -88,7 +89,7 @@ class AuthorView(APIView):
 
 class AuthorDetailView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
 
 
     def get(self, request:Request, id):
@@ -116,7 +117,7 @@ class AuthorDetailView(APIView):
 
 class CategoryView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
 
     def get(self, request: Request):
         offset = int(request.query_params.get('offset', 0))
@@ -136,7 +137,7 @@ class CategoryView(APIView):
         
 class CategoryDetailView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrReadOnly]
     def get(self, request:Request, id):
         author = CategoryModel.objects.get(pk=id)
         serializer = CategorySerializer(author)
