@@ -26,4 +26,4 @@ class MovieCreateSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=CategoryModel.objects.all())
     class Meta:
         model = MovieModel
-        fields = ['name', 'description', 'author', 'category', 'release_date', 'rating', 'duration']
+        fields = ['id','name', 'description', 'author', 'category', 'release_date', 'rating', 'duration']

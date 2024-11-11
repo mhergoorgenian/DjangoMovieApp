@@ -2,125 +2,184 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import MovieModel, AuthorModel, CategoryModel
-from .serializers import MovieSerializer
-import json
 
 class MovieTest(APITestCase):
-    def test_movie(self):
-        #register login token
+
+    def setUp(self):
+        # Register and login to get the authorization token
         user_data = {'username': 'testuser', 'password': 'testpassword'}
         register_url = reverse('auth-register')
         self.client.post(register_url, {**user_data, 'fullname': 'testname'})
-
+        
         login_url = reverse('auth-login')
         response = self.client.post(login_url, user_data)
         token = response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
 
-        # create db data
-        self.category = CategoryModel.objects.create(name="Drama")
-        self.author = AuthorModel.objects.create(name="John Doe")
-        self.movie = MovieModel.objects.create(
-            name="Test Movie",
-            description="Test Description",
-            author=self.author,
-            category=self.category
-        )
-        print({"movie":MovieSerializer(self.movie).data})
-
-
-        test_data ={'data':[
-            {
-            "name": "Test Movie",
-            "description": "Test Description",
-            "author": self.author.name,
-            "category": self.category.name,
-            "release_date":None,
-            "rating":None,
-            "duration":None
-        }
-        ],
-        'total': 1
-        }
-        print({"movie":test_data})
-        # test movie with filter
-        movie_list_url = reverse('movie-list') + "?name=Test"
-        response = self.client.get(movie_list_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print({"movie":response.content})
-        self.assertEqual(response.data, test_data)
-        
-        # test movie creation
-        movie_data = {
-            "name": "New Movie",
-            "description": "Description of new movie",
-            "author": self.author.id,
-            "category": self.category.id
-        }
-        response = self.client.post(reverse('movie-list'), data=movie_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        print(response.content)
-        
-        # test movie by id
-        movie_detail_url = reverse('movie-id', args=[self.movie.id])
-        response = self.client.get(movie_detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], "Test Movie")
-        print(response.content)
-
-        # movie update by id
-        response = self.client.put(movie_detail_url, {"name": "Updated Movie"}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], "Updated Movie")
-        print(response.content)
-
-        # movie deletion by id
-        response = self.client.delete(movie_detail_url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        print(response.content)
-
-        # author creation
-        author_data = {"name": "New Author"}
-        author_list_url = reverse('author-list')
-        response = self.client.post(author_list_url, data=author_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], "New Author")
-        print(response.content)
-
-        # category creation
-        category_data = {"name": "New Category"}
+    # Category CRUD
+    def test_category_crud(self):
+        # Create category
+        category_data = {"name": "Drama"}
         category_list_url = reverse('category-list')
         response = self.client.post(category_list_url, data=category_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], "New Category")
-        print(response.content)
+        category_id = response.data['id']
 
-        # test author by id, update, and delete
-        author_detail_url = reverse('author-id', args=[self.author.id])
-        response = self.client.get(author_detail_url)
+        # Get category list
+        category_get_list_url = reverse('category-list')
+        response = self.client.get(category_get_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.content)
+        print(response.data['data'])
+        data=[
+            {
+                "id":1,
+                "name":"Drama"
+            }
+        ]
+        self.assertEqual(response.data['data'], data)
         
-        response = self.client.put(author_detail_url, {"name": "Updated Author"}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], "Updated Author")
-        print(response.content)
-
-        response = self.client.delete(author_detail_url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        print(response.content)
-
-        # test category by id, update, and delete
-        category_detail_url = reverse('category-id', args=[self.category.id])
+        
+        # Retrieve category by ID
+        category_detail_url = reverse('category-id', args=[category_id])
         response = self.client.get(category_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.content)
-        
-        response = self.client.put(category_detail_url, {"name": "Updated Category"}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], "Updated Category")
-        print(response.content)
+        self.assertEqual(response.data['name'], "Drama")
 
+        # Update category by ID
+        updated_data = {"name": "Updated Drama"}
+        response = self.client.put(category_detail_url, data=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], "Updated Drama")
+
+        # Delete category by ID
         response = self.client.delete(category_detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    # Author CRUD
+    def test_author_crud(self):
+        # Create author
+        author_data = {"name": "John Doe"}
+        author_list_url = reverse('author-list')
+        response = self.client.post(author_list_url, data=author_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        author_id = response.data['id']
+
+
+        # Get author list
+        author_get_list_url = reverse('author-list')
+        response = self.client.get(author_get_list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data['data'])
+        data=[
+            {
+                "id":1,
+                "name":"John Doe",
+                "bio": None
+            }
+        ]
+        self.assertEqual(response.data['data'], data)
+        
+        # Retrieve author by ID
+        author_detail_url = reverse('author-id', args=[author_id])
+        response = self.client.get(author_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], "John Doe")
+
+        # Update author by ID
+        updated_data = {"name": "Updated John Doe"}
+        response = self.client.put(author_detail_url, data=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], "Updated John Doe")
+
+        # Delete author by ID
+        response = self.client.delete(author_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    # Movie CRUD
+    def test_movie_crud(self):
+
+        #create category
+        category_data = {"name": "Drama"}
+        category_list_url = reverse('category-list')
+        response = self.client.post(category_list_url, data=category_data)
+        category_id = response.data['id']
+        category_name=response.data['name']
+        print(response.data)
+
+        #create author
+        author_data = {"name": "John Doe"}
+        author_list_url = reverse('author-list')
+        response = self.client.post(author_list_url, data=author_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        author_id = response.data['id']
+        author_name=response.data['name']
+        print({"response":response.data})
+
+        #create movie
+        create_url = reverse('movie-list')  # Ensure this matches your URL configuration
+        create_data = {
+            "name": "Test Movie",
+            "description": "A test movie description.",
+            "category": category_id,
+            "author": author_id
+        }
+        response = self.client.post(create_url, data=create_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        print({"response":response.data})
+        movie_id=response.data['id']
+
+        # Get movie list
+        movie_get_list_url = reverse('movie-list')
+        response = self.client.get(movie_get_list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data['data'])
+        data=[
+            {
+                'name': 'Test Movie',
+                'description': 'A test movie description.',
+                'author': 'John Doe',
+                'category': 'Drama',
+                'release_date': None,
+                'rating': None,
+                'duration': None
+            }
+        ]
+        print(data)
+        self.assertEqual(response.data['data'], data)
         print(response.content)
+        
+        
+
+        # Retrieve movie by ID
+        testdata={
+                'name': 'Test Movie',
+                'description': 'A test movie description.',
+                'author': 'John Doe',
+                'category': 'Drama',
+                'release_date': None,
+                'rating': None,
+                'duration': None
+        }
+        movie_detail_url = reverse('movie-id', args=[movie_id])
+        response = self.client.get(movie_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print({"Id":response.data})
+        print({"Id":data})
+        self.assertEqual(response.data,testdata)
+
+        # Update Movie by ID
+        updated_data = {"name": "Updated John Doe"}
+        response = self.client.put(movie_detail_url, data=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], "Updated John Doe")
+        print({"Update":response.data})
+
+        # Delete Movie by ID
+        response = self.client.delete(movie_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
