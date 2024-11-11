@@ -43,11 +43,6 @@ class MovieView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
         
     
-           
-    
-
-
-    
 class MovieDetailView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -75,10 +70,13 @@ class MovieDetailView(APIView):
 class AuthorView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    def get(self, request:Request):
-        authors = AuthorModel.objects.all()
+    def get(self, request: Request):
+        offset = int(request.query_params.get('offset', 0))
+        limit = int(request.query_params.get('limit', 5))
+        authors = AuthorModel.objects.all()[offset:offset+limit]
+        total = AuthorModel.objects.all().count()
         serializer = AuthorSerializer(authors, many=True)
-        return Response(serializer.data)
+        return Response({'data': serializer.data, 'total': total})
 
     def post(self, request):
         serializer = AuthorSerializer(data=request.data)
@@ -105,10 +103,8 @@ class AuthorDetailView(APIView):
         serializer.save()
         return Response(serializer.data)
         
-    
-    def delete(self, request:Request, pk):
-
-        author = AuthorModel.objects.get(pk=pk)
+    def delete(self, request:Request, id):
+        author = AuthorModel.objects.get(pk=id)
         if author:
             author.delete()
             return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -119,7 +115,46 @@ class AuthorDetailView(APIView):
 
 
 class CategoryView(APIView):
-    def get(self, request):
-        categories = CategoryModel.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request):
+        offset = int(request.query_params.get('offset', 0))
+        limit = int(request.query_params.get('limit', 5))
+        categories = CategoryModel.objects.all()[offset:offset+limit]
+        total = CategoryModel.objects.all().count()
         serializer = CategorySerializer(categories, many=True)
+        return Response({'data': serializer.data, 'total': total})
+
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+        
+class CategoryDetailView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request:Request, id):
+        author = CategoryModel.objects.get(pk=id)
+        serializer = CategorySerializer(author)
         return Response(serializer.data)
+
+    def put(self, request:Request, id):
+        author = CategoryModel.objects.get(pk=id)
+        serializer = CategorySerializer(author, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+        
+    
+    def delete(self, request:Request, id):
+        author = CategoryModel.objects.get(pk=id)
+        if author:
+            author.delete()
+            return Response({"detail": "Deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"error: Author Not Found"}, status=status.HTTP_403_FORBIDDEN)
+        
