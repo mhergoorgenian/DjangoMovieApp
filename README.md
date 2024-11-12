@@ -27,17 +27,17 @@ The following endpoints are provided in this API:
 
 ### Categories
 - **GET /categories**: Retrieve all categories
-- **POST /categories**: Create a new category
+- **POST /categories**: Create a new category (admin only)
 - **GET /category/<id>**: Retrieve a category by ID
-- **PUT /category/<id>**: Update a category by ID
-- **DELETE /category/<id>**: Delete a category by ID
+- **PUT /category/<id>**: Update a category by ID (admin only)
+- **DELETE /category/<id>**: Delete a category by ID (admin only)
 
 ### Authors
 - **GET /authors**: Retrieve all authors
-- **POST /authors**: Create a new author
+- **POST /authors**: Create a new author (admin only)
 - **GET /author/<id>**: Retrieve an author by ID
-- **PUT /author/<id>**: Update an author by ID
-- **DELETE /author/<id>**: Delete an author by ID
+- **PUT /author/<id>**: Update an author by ID (admin only)
+- **DELETE /author/<id>**: Delete an author by ID (admin only)
 
 ### Movies
 - **GET /movies**: Retrieve all movies
